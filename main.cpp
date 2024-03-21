@@ -1,13 +1,10 @@
-#include <Windows.h>
-
-#include <GL\freeglut.h>
+#include <GL\glut.h>
 #include <iostream>
 #include<math.h>
-#include<cstring>
-#include<string>
-#include <time.h>
-#include <sstream>
-
+#include<string.h>
+#include <time.h> //time manipulation
+#include <sstream> //string manipulation
+#include<mmsystem.h>
 using namespace std;
 
 void update(int);
@@ -15,7 +12,13 @@ float speed = 0.0f;
 int healthCount = 3;
 int score = 0;
 
-using namespace std;
+
+void playCrashSound() {
+    PlaySound(TEXT("crash"), NULL, SND_FILENAME | SND_ASYNC);
+}
+void playLooseSound() {
+    PlaySound(TEXT("loose"), NULL, SND_FILENAME | SND_ASYNC);
+}
 
 float _move = 0.0f;
 float obstacleSpeed1 = 0.0f;
@@ -25,15 +28,15 @@ int obstacleFlag = 0;
 int random = 0;
 float _stars;
 
-void drawText(const char *text, int length, float x, float y) {
+void drawText(const char *text, int length, float x, float y) {//text rendering in opengl
 	glMatrixMode(GL_PROJECTION);
-	double *matrix = new double[16];
+	double *matrix = new double[16];//used to store the current projection matrix
 	glGetDoublev(GL_PROJECTION_MATRIX, matrix);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glPushMatrix();
-	glLoadIdentity();
-	glRasterPos2f(x, 0.9f);
+	glPushMatrix();//pushes to stack current identity matrix
+	glLoadIdentity(); //reset the identity matrix
+	glRasterPos2f(x, y);//position of Game over and score
 	for(int i=0; i<length; i++) {
 		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, (int)text[i]);
 	}
@@ -43,6 +46,21 @@ void drawText(const char *text, int length, float x, float y) {
 	glMatrixMode(GL_MODELVIEW);
 }
 
+void displayGameOverScreen(int value) {
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Render a game over message
+    glColor3f(1.0, 0.0, 0.0); // Red color
+    glRasterPos2f(-0.5, 0.0); // Position the text
+    const char *gameOverMessage = "Game Over";
+    for (int i = 0; gameOverMessage[i] != '\0'; i++) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, gameOverMessage[i]);
+    }
+
+    // Swap buffers to display the rendered scene
+    glutSwapBuffers();
+}
 void specialKeys(int key, int x, int y) {
     switch (key) {
 
@@ -51,7 +69,7 @@ void specialKeys(int key, int x, int y) {
 			flag=1;
 			 if(score <= 5) {
 				obstacleSpeed1 = 0.008f;
-				speed = 0.01f;
+				speed = 0.01f;//plane speed
 			 }
 			 else if(score > 5 && score <= 10) {
 				 obstacleSpeed1 = 0.01f;
@@ -122,9 +140,7 @@ void handleResize(int w, int h) {
 
 void drawScene() {
 
-	srand (time(NULL));
-
-	glColor3ub(255, 0, 0); // change color to red
+	srand (time(NULL));//if no seeding value same sequence of random number are produced >>> time(null) provides actual time
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3d(1,0,0);
 	glLoadIdentity(); //Reset the drawing perspective
@@ -134,15 +150,18 @@ void drawScene() {
 	// Game Over and Score Display
 	if(healthCount == 0) {
 		// Game Over
-		glColor3d(1,1,0);
+    playLooseSound();
+    Sleep(500);
+    displayGameOverScreen(0);
+		glColor3d(1,1,0);//game over in yellow
 		stringstream convert; // stringstream used for the conversion
 		string text = "Game Over";//string which will contain the result
 		//text = convert.str();
-		drawText(text.data(), text.size(), -0.3f, 0.5f);
+		drawText(text.data(), text.size(), -0.21f, 0.2f);
 
 		convert << score;
 		text = "Score: " + convert.str();//string which will contain the score
-		drawText(text.data(), text.size(), -0.21f, 0.4f);
+		drawText(text.data(), text.size(), -0.12f, -0.1f);
 
 		_obstacle1 == 0.0f;
 		obstacleSpeed1 = 0.0f;
@@ -150,20 +169,20 @@ void drawScene() {
 		speed = 0.0f;
 		_move = 0.0f;
 	} else {
-		glColor3d(1,1,0);
+		glColor3d(1,1,0);//score color
 		string text;//string which will contain the result
 		stringstream convert; // stringstream used for the conversion
 		convert << score;//add the value of Number to the characters in the stream
 		text = convert.str();
-		drawText(text.data(), text.size(), 0.0f, 0.4f);
+		drawText(text.data(), text.size(), 0.0f, 0.4f);//game on score print
 	}
 
 
 	// Stars
-	glColor3d(1,1,1);
-	glPointSize(3);
-	glPushMatrix();
-	glTranslatef(0.0f, _stars, 0.0f);
+	glColor3d(1,1,1);//white color
+	glPointSize(4);
+	glPushMatrix();//push into stack
+	glTranslatef(0.0f, _stars, 0.0f);//along y axis
 	glBegin(GL_POINTS);
 		glVertex3f(0.5f, 1.99f, 0.0f);
 		glVertex3f(-0.97f, 1.97f, 0.0f); //
@@ -206,7 +225,7 @@ void drawScene() {
 		obstacleFlag = 1;
 		_obstacle1 -= obstacleSpeed1;
 		//Obstacle Left
-		glColor3d(0.4f,0.4f,0.4f);
+		glColor3d(0.8f, 0.4f, 0.0f);
 		glPushMatrix();
 		glTranslatef(0.0f, _obstacle1, 0.0f);
 		glBegin(GL_QUADS);
@@ -226,7 +245,7 @@ void drawScene() {
 		obstacleFlag = 2;
 		_obstacle1 -= obstacleSpeed1;
 		//Obstacle Right
-		glColor3d(0.4f,0.4f,0.4f);
+		glColor3d(0.8f, 0.4f, 0.0f);
 		glPushMatrix();
 		glTranslatef(0.0f, _obstacle1, 0.0f);
 		glBegin(GL_QUADS);
@@ -246,7 +265,7 @@ void drawScene() {
 		obstacleFlag = 3;
 		_obstacle1 -= obstacleSpeed1;
 		//Obstacle Middle
-		glColor3d(0.4f,0.4f,0.4f);
+		glColor3d(0.8f, 0.4f, 0.0f);
 		glPushMatrix();
 		glTranslatef(0.0f, _obstacle1, 0.0f);
 		glBegin(GL_QUADS);
@@ -330,19 +349,19 @@ void drawScene() {
 	glTranslatef(_move, 0.0f, 0.0f);
     glBegin(GL_QUADS);
 
-		glColor3d(0,0.4,1);
+		glColor3d(0.8f, 0.4f, 0.0f);
 		glVertex3f(0.0f, -0.63f, 0.0f);
         glVertex3f(0.0f, -0.63f, 0.0f);
         glVertex3f(0.17f, -0.7f, 0.0f);
         glVertex3f(-0.17f, -0.7f, 0.0f);
 
-		glColor3d(0,0,0.3);
+		glColor3d(00,0.0,0.8);
         glVertex3f(-0.1f, -0.6f, 0.0f);
         glVertex3f(0.1f, -0.6f, 0.0f);
         glVertex3f(0.1f, -0.75f, 0.0f);
         glVertex3f(-0.1f, -0.75f, 0.0f);
 
-		glColor3d(0.6,0,0);
+		glColor3d(0.8f, 0.4f, 0.0f);
 		glVertex3f(0.0f, -0.55f, 0.0f);
         glVertex3f(0.0f, -0.55f, 0.0f);
         glVertex3f(0.05f, -0.60f, 0.0f);
@@ -360,20 +379,25 @@ void drawScene() {
 
 	//Obstacle Collision Left Bar
 	if((_move > -1.0f && _move < 0.0f) && (_obstacle1 < -1.45f && _obstacle1 > -1.8f) && random == 1) {
-		Sleep(150);
+		Sleep(500);
+		        playCrashSound();
+
 		healthCount--;
 		obstacleFlag = 0;
 		_obstacle1 = 0.0f;			// Decrement of Score
 	} else if((_move < 1.0f && _move > 0.0f) && (_obstacle1 < -1.45f && _obstacle1 > -1.8f) && random == 2) {
 	//Obstacle Collision Right Bar
 		glutDisplayFunc(drawScene);
-		Sleep(150);
+            playCrashSound();
+		Sleep(500);
 		healthCount--;
 		obstacleFlag = 0;
 		_obstacle1 = 0.0f;			// Decrement of Score
 	} else if((_move > 0.4f || _move < -0.4f) && (_obstacle1 < -1.45f && _obstacle1 > -1.8f) && random == 3) {
 	//Obstacle Collision Middle Bar
-		Sleep(150);
+	        playCrashSound();
+
+		Sleep(500);
 		healthCount--;
 		obstacleFlag = 0;
 		_obstacle1 = 0.0f;			//Decrement of Score
@@ -386,20 +410,20 @@ void update(int value) {
 
 	glutPostRedisplay(); //Notify GLUT that the display has changed
 
-	glutTimerFunc(10, update, 0); //Notify GLUT to call update again in 20 milliseconds
+	glutTimerFunc(10, update, 0); //Notify GLUT to call update again in 10 milliseconds
 }
-
 int main(int argc, char** argv) {
 	int opt;
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(370, 700);
-	glutCreateWindow("Transformation");
-	//glutInitWindowPosition(0, 1000);
-	//gluOrtho2D(0.0, 640.0, 0.0, 480.0);
+	glutCreateWindow("Aero_Surge");
 	glutDisplayFunc(drawScene);
 	glutSpecialFunc(specialKeys); //Special Key Handler
 	glutTimerFunc(10, update, 0); //Add a timer
+//sndPlaySound("song",SND_ASYNC | SND_LOOP);
 	glutMainLoop();
+    sndPlaySound(NULL, SND_ASYNC); // Stop the sound
+    mciSendString("song", NULL, 0, NULL); // Close the sound
 	return 0;
 }
