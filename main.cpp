@@ -7,6 +7,9 @@
 #include <sstream> //string manipulation
 #include<mmsystem.h>
 using namespace std;
+const int WINDOW_WIDTH = 370;
+const int WINDOW_HEIGHT = 700;
+const int REFRESH_RATE = 16;
 
 void update(int);
 void restartGame();
@@ -84,7 +87,7 @@ void drawInstructionsScreen() {
     }
 
     // Draw the list of instructions
-    string instructions = "\n\nPress 'UP' arrow key to dodge.\n";
+    string instructions = "\n\nPress 'L/R'arrow key to dodge.\n";
     instructions += "Press 'R' to restart.\n";
     instructions += "Press 'ESC' to exit the game.\n\n";
 
@@ -257,7 +260,6 @@ void drawGameScreen() {
         string exitText = "Press 'Esc' to Exit";
        drawText(restartText.data(), restartText.size(), -0.4f, -0.4f);
        drawText(exitText.data(), exitText.size(), -0.4f, -0.5f);
-		_obstacle1 == 0.0f;
 		obstacleSpeed1 = 0.0f;
 		_stars = 0.0f;
 		speed = 0.0f;
@@ -271,7 +273,6 @@ void drawGameScreen() {
 		text = convert.str();
 		drawText(text.data(), text.size(), 0.0f, 0.4f);//game on score print
 	}
-
 
 	// Stars
 	glColor3d(1,1,1);//white color
@@ -554,12 +555,12 @@ void update(int value) {
 
 	glutPostRedisplay(); //Notify GLUT that the` display has changed
 
-	glutTimerFunc(10, update, 0); //Notify GLUT to call update again in 10 milliseconds
+	glutTimerFunc(REFRESH_RATE, update, 0); //Notify GLUT to call update again in 10 milliseconds
 }
 int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(370, 700);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Aero_Surge");
 	glutDisplayFunc(drawScene);
 	glutSpecialFunc(specialKeys); //Special Key Handler
