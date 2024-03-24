@@ -1,3 +1,4 @@
+
 #include <GL\glut.h>
 #include <iostream>
 #include<math.h>
@@ -8,17 +9,35 @@
 using namespace std;
 
 void update(int);
+void restartGame();
 float speed = 0.0f;
 int healthCount = 3;
 int score = 0;
+bool gameOverSoundPlayed = false;
+bool startSoundPlayed=false;
 
+enum ScreenState {
+    START_SCREEN,
+    INSTRUCTIONS_SCREEN,
+    GAME_SCREEN
+};
+ScreenState currentScreen = START_SCREEN;
+
+void drawScene();
 
 void playCrashSound() {
-    PlaySound(TEXT("crash"), NULL, SND_FILENAME | SND_ASYNC);
+    PlaySound(TEXT("crash"), NULL, SND_FILENAME | SND_ASYNC );
 }
 void playLooseSound() {
     PlaySound(TEXT("loose"), NULL, SND_FILENAME | SND_ASYNC);
 }
+void playRocketSound() {
+    PlaySound(TEXT("rocket"), NULL, SND_FILENAME | SND_ASYNC| SND_LOOP);
+}
+void playStartSound() {
+    PlaySound(TEXT("start"), NULL, SND_FILENAME | SND_ASYNC| SND_LOOP);
+}
+
 
 float _move = 0.0f;
 float obstacleSpeed1 = 0.0f;
@@ -27,6 +46,64 @@ int flag = 0;
 int obstacleFlag = 0;
 int random = 0;
 float _stars;
+
+void drawStartScreen() {
+
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glColor3f(1.0, 1.0, 1.0);
+    glRasterPos2f(-0.2, 0.5);
+
+    string startText = "Start";
+    for (char c : startText) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+    }
+    glRasterPos2f(-0.2, 0.3);
+    string instructionsText = "Instructions";
+    for (char c : instructionsText) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+    }
+    glRasterPos2f(-0.2, 0.1);
+    string exitText = "Exit";
+    for (char c : exitText) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+    }
+    glutSwapBuffers();
+}
+
+void drawInstructionsScreen() {
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glColor3f(1.0, 1.0, 1.0);
+
+    // Draw "Instructions" at the top
+    string title = "Instructions:";
+    glRasterPos2f(-0.4, 0.8); // Adjust position as needed
+    for (char c : title) {
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+    }
+
+    // Draw the list of instructions
+    string instructions = "\n\nPress 'UP' arrow key to dodge.\n";
+    instructions += "Press 'R' to restart.\n";
+    instructions += "Press 'ESC' to exit the game.\n\n";
+
+    // Set the initial position for drawing the list
+    float xPos = -0.9f;
+    float yPos = 0.6f;
+
+    // Draw each character of the instructions string
+    for (char c : instructions) {
+        if (c == '\n') {
+            yPos -= 0.1f; // Move to the next line
+            glRasterPos2f(xPos, yPos);
+        } else {
+            glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, c);
+        }
+    }
+
+    glutSwapBuffers();
+}
 
 void drawText(const char *text, int length, float x, float y) {//text rendering in opengl
 	glMatrixMode(GL_PROJECTION);
@@ -46,21 +123,35 @@ void drawText(const char *text, int length, float x, float y) {//text rendering 
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void displayGameOverScreen(int value) {
-    // Clear the screen
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    // Render a game over message
-    glColor3f(1.0, 0.0, 0.0); // Red color
-    glRasterPos2f(-0.5, 0.0); // Position the text
-    const char *gameOverMessage = "Game Over";
-    for (int i = 0; gameOverMessage[i] != '\0'; i++) {
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, gameOverMessage[i]);
+void keyboard(unsigned char key, int x, int y) {
+    switch (key) {
+        case 'r': // Restart game on pressing 'r'
+        case 'R':
+            restartGame();
+            break;
+        case 27: // ESC key to exit the game
+            exit(0);
+            break;
+        default:
+            break;
     }
-
-    // Swap buffers to display the rendered scene
-    glutSwapBuffers();
 }
+void restartGame() {
+    healthCount = 3;
+    score = 0;
+    speed = 0.0f;
+    _move = 0.0f;
+    obstacleSpeed1 = 0.0f;
+    _obstacle1 = 0.0f;
+    flag = 0;
+    obstacleFlag = 0;
+    random = 0;
+    _stars = 0.0f;
+    playRocketSound(); // Restart background sound
+    gameOverSoundPlayed = false;
+    startSoundPlayed=false;
+}
+
 void specialKeys(int key, int x, int y) {
     switch (key) {
 
@@ -138,8 +229,7 @@ void handleResize(int w, int h) {
 	gluPerspective(45.0, (double)w / (double)h, 1.0, 200.0);
 }
 
-void drawScene() {
-
+void drawGameScreen() {
 	srand (time(NULL));//if no seeding value same sequence of random number are produced >>> time(null) provides actual time
     glClear(GL_COLOR_BUFFER_BIT);
     glColor3d(1,0,0);
@@ -150,9 +240,16 @@ void drawScene() {
 	// Game Over and Score Display
 	if(healthCount == 0) {
 		// Game Over
-    playLooseSound();
-    Sleep(500);
-    displayGameOverScreen(0);
+		if (!gameOverSoundPlayed) {
+            playLooseSound();
+            Sleep(2300);
+            gameOverSoundPlayed = true; // Mark that game over sound has been played
+        }
+        if (!startSoundPlayed) {
+            playStartSound();
+            startSoundPlayed = true; // Mark that game over sound has been played
+        }
+
 		glColor3d(1,1,0);//game over in yellow
 		stringstream convert; // stringstream used for the conversion
 		string text = "Game Over";//string which will contain the result
@@ -161,13 +258,18 @@ void drawScene() {
 
 		convert << score;
 		text = "Score: " + convert.str();//string which will contain the score
-		drawText(text.data(), text.size(), -0.12f, -0.1f);
-
+		drawText(text.data(), text.size(), -0.10f, -0.1f);
+        glColor3d(1,1,1);
+        string restartText = "Press 'R' to Restart";
+        string exitText = "Press 'Esc' to Exit";
+       drawText(restartText.data(), restartText.size(), -0.4f, -0.4f);
+       drawText(exitText.data(), exitText.size(), -0.4f, -0.5f);
 		_obstacle1 == 0.0f;
 		obstacleSpeed1 = 0.0f;
 		_stars = 0.0f;
 		speed = 0.0f;
 		_move = 0.0f;
+
 	} else {
 		glColor3d(1,1,0);//score color
 		string text;//string which will contain the result
@@ -379,25 +481,27 @@ void drawScene() {
 
 	//Obstacle Collision Left Bar
 	if((_move > -1.0f && _move < 0.0f) && (_obstacle1 < -1.45f && _obstacle1 > -1.8f) && random == 1) {
-		Sleep(500);
 		        playCrashSound();
 
+        Sleep(1000);
+        playRocketSound();
 		healthCount--;
 		obstacleFlag = 0;
 		_obstacle1 = 0.0f;			// Decrement of Score
 	} else if((_move < 1.0f && _move > 0.0f) && (_obstacle1 < -1.45f && _obstacle1 > -1.8f) && random == 2) {
 	//Obstacle Collision Right Bar
 		glutDisplayFunc(drawScene);
-            playCrashSound();
-		Sleep(500);
+        playCrashSound();
+		Sleep(1000);
+        playRocketSound();
 		healthCount--;
 		obstacleFlag = 0;
 		_obstacle1 = 0.0f;			// Decrement of Score
 	} else if((_move > 0.4f || _move < -0.4f) && (_obstacle1 < -1.45f && _obstacle1 > -1.8f) && random == 3) {
 	//Obstacle Collision Middle Bar
 	        playCrashSound();
-
-		Sleep(500);
+		Sleep(1000);
+        playRocketSound();
 		healthCount--;
 		obstacleFlag = 0;
 		_obstacle1 = 0.0f;			//Decrement of Score
@@ -405,25 +509,71 @@ void drawScene() {
 
 	glutSwapBuffers();
 }
+void drawScene() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    switch (currentScreen) {
+        case START_SCREEN:
+            drawStartScreen();
+            break;
+        case INSTRUCTIONS_SCREEN:
+            drawInstructionsScreen();
+            break;
+        case GAME_SCREEN:
+            drawGameScreen();
+            break;
+    }
+    glutSwapBuffers();
+}
 
+void mouse(int button, int state, int x, int y) {
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        // Convert mouse coordinates to OpenGL coordinates
+        float xPos = (float)x / glutGet(GLUT_WINDOW_WIDTH) * 2.0 - 1.0;
+        float yPos = 1.0 - (float)y / glutGet(GLUT_WINDOW_HEIGHT) * 2.0;
+
+        switch (currentScreen) {
+            case START_SCREEN:
+                // Check if start button is clicked
+                if (xPos >= -0.2 && xPos <= 0.2 && yPos >= 0.5 && yPos <= 0.6) {
+                    currentScreen = GAME_SCREEN;
+                    playRocketSound();
+                }
+                // Check if instructions button is clicked
+                else if (xPos >= -0.2 && xPos <= 0.2 && yPos >= 0.3 && yPos <= 0.4) {
+                    currentScreen = INSTRUCTIONS_SCREEN;
+                }
+                // Check if exit button is clicked
+                else if (xPos >= -0.2 && xPos <= 0.2 && yPos >= 0.1 && yPos <= 0.2) {
+                    exit(0);
+                }
+                break;
+            case INSTRUCTIONS_SCREEN:
+                // Check if anywhere is clicked to go back to the start screen
+                currentScreen = START_SCREEN;
+                break;
+            case GAME_SCREEN:
+                // No mouse interactions during game screen
+                break;
+        }
+    }
+}
 void update(int value) {
 
-	glutPostRedisplay(); //Notify GLUT that the display has changed
+	glutPostRedisplay(); //Notify GLUT that the` display has changed
 
 	glutTimerFunc(10, update, 0); //Notify GLUT to call update again in 10 milliseconds
 }
 int main(int argc, char** argv) {
-	int opt;
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(370, 700);
 	glutCreateWindow("Aero_Surge");
 	glutDisplayFunc(drawScene);
 	glutSpecialFunc(specialKeys); //Special Key Handler
+	  glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
+    playStartSound();
 	glutTimerFunc(10, update, 0); //Add a timer
-//sndPlaySound("song",SND_ASYNC | SND_LOOP);
 	glutMainLoop();
-    sndPlaySound(NULL, SND_ASYNC); // Stop the sound
-    mciSendString("song", NULL, 0, NULL); // Close the sound
 	return 0;
 }
