@@ -154,72 +154,65 @@ void restartGame() {
 
 void specialKeys(int key, int x, int y) {
     switch (key) {
-
-	case GLUT_KEY_UP:
-		  if(flag == 0) {
-			flag=1;
-			 if(score <= 5) {
-				obstacleSpeed1 = 0.008f;
-				speed = 0.01f;//plane speed
-			 }
-			 else if(score > 5 && score <= 10) {
-				 obstacleSpeed1 = 0.01f;
-				 speed = 0.013f;
-			 }
-			 else if(score > 10 && score <= 15) {
-				 obstacleSpeed1 = 0.012f;
-				 speed = 0.016f;
-			 }
-			 else if(score > 15 && score <= 20) {
-				 obstacleSpeed1 = 0.014f;
-				 speed = 0.019f;
-			 } else if(score > 20 && score <= 30) {
-				 obstacleSpeed1 = 0.016f;
-				 speed = 0.022f;
-			 } else if(score > 30 && score <= 40) {
-				 obstacleSpeed1 = 0.020f;
-				 speed = 0.028f;
-			 } else if(score > 40 && score <= 50) {
-				 obstacleSpeed1 = 0.024f;
-				 speed = 0.034f;
-			 } else if(score > 50) {
-				 obstacleSpeed1 = 0.028f;
-				 speed = 0.040f;
-			 }
-		  } else {
-			 flag=0;
-			 if(score <= 5) {
-				obstacleSpeed1 = 0.008;
-				speed = -0.01f;
-			 }
-			 else if(score > 5 && score <= 10) {
-				 obstacleSpeed1 = 0.01;
-				 speed = -0.013f;
-			 }
-			 else if(score > 10 && score <= 15) {
-				 obstacleSpeed1 = 0.012f;
-				 speed = -0.016f;
-			 }
-			 else if(score > 15 && score <= 20) {
-				 obstacleSpeed1 = 0.014f;
-				 speed = -0.019f;
-			 } else if(score > 20 && score <= 30) {
-				 obstacleSpeed1 = 0.016f;
-				 speed = -0.022f;
-			 } else if(score > 30 && score <= 40) {
-				 obstacleSpeed1 = 0.020f;
-				 speed = -0.028f;
-			 } else if(score > 40 && score <= 50) {
-				 obstacleSpeed1 = 0.024f;
-				 speed = -0.034f;
-			 } else if(score > 50) {
-				 obstacleSpeed1 = 0.028f;
-				 speed = -0.040f;
-			 }
-		  }
-          break;
+        case GLUT_KEY_RIGHT:
+            if (score <= 5) {
+                obstacleSpeed1 = 0.008f;
+                speed = 0.01f; // plane speed
+            } else if (score > 5 && score <= 10) {
+                obstacleSpeed1 = 0.01f;
+                speed = 0.013f;
+            } else if (score > 10 && score <= 15) {
+                obstacleSpeed1 = 0.012f;
+                speed = 0.016f;
+            } else if (score > 15 && score <= 20) {
+                obstacleSpeed1 = 0.014f;
+                speed = 0.019f;
+            } else if (score > 20 && score <= 30) {
+                obstacleSpeed1 = 0.016f;
+                speed = 0.022f;
+            } else if (score > 30 && score <= 40) {
+                obstacleSpeed1 = 0.020f;
+                speed = 0.028f;
+            } else if (score > 40 && score <= 50) {
+                obstacleSpeed1 = 0.024f;
+                speed = 0.034f;
+            } else if (score > 50) {
+                obstacleSpeed1 = 0.028f;
+                speed = 0.040f;
+            }
+            break;
+        case GLUT_KEY_LEFT:
+            if (score <= 5) {
+                obstacleSpeed1 = 0.008;
+                speed = -0.01f;
+            } else if (score > 5 && score <= 10) {
+                obstacleSpeed1 = 0.01;
+                speed = -0.013f;
+            } else if (score > 10 && score <= 15) {
+                obstacleSpeed1 = 0.012f;
+                speed = -0.016f;
+            } else if (score > 15 && score <= 20) {
+                obstacleSpeed1 = 0.014f;
+                speed = -0.019f;
+            } else if (score > 20 && score <= 30) {
+                obstacleSpeed1 = 0.016f;
+                speed = -0.022f;
+            } else if (score > 30 && score <= 40) {
+                obstacleSpeed1 = 0.020f;
+                speed = -0.028f;
+            } else if (score > 40 && score <= 50) {
+                obstacleSpeed1 = 0.024f;
+                speed = -0.034f;
+            } else if (score > 50) {
+                obstacleSpeed1 = 0.028f;
+                speed = -0.040f;
+            }
+            break;
+        default:
+            break;
     }
 }
+
 
 //Called when the window is resized
 void handleResize(int w, int h) {
